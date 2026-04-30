@@ -5,291 +5,634 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>WMS Dashboard 2026</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
-<script>
-// Register datalabels plugin globally
-if(typeof ChartDataLabels !== 'undefined') {
-  Chart.register(ChartDataLabels);
-  // Set global defaults for bar charts
-  Chart.defaults.set('plugins.datalabels', {
-    display: ctx => ctx.chart.config.type==='bar' && ctx.dataset.data[ctx.dataIndex] > 0,
-    anchor: 'end',
-    align: 'end',
-    offset: 2,
-    color: '#8b949e',
-    font: { size: 9, weight: '600', family: "JetBrains Mono, monospace" },
-    formatter: v => v >= 1000 ? (v/1000).toFixed(1)+'K' : v,
-    clamp: true,
-    clip: false,
-  });
-}
-</script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
 :root{
-  --bg:#0d1117;--sf:#161b22;--s2:#1c2128;--s3:#21262d;--bd:#30363d;--b2:#3d444d;
-  --tx:#e6edf3;--t2:#8b949e;--t3:#484f58;
-  --blue:#4493f8;--cyan:#39d353;--green:#2dba4e;--yellow:#d29922;--red:#f85149;
-  --purple:#bc8cff;--orange:#e3b341;
-  --bld:rgba(68,147,248,.12);--gld:rgba(45,186,78,.12);--yld:rgba(210,153,34,.12);
-  --rld:rgba(248,81,73,.12);--pld:rgba(188,140,255,.12);--cld:rgba(57,211,83,.12);
-  --fn:'Kanit',sans-serif;--mo:'JetBrains Mono',monospace;
-  --r:8px;--sh:0 1px 3px rgba(0,0,0,.3);--shlg:0 8px 32px rgba(0,0,0,.4);
-  --ease:.15s ease;
+  --bg:#0b0f1a;--sf:#131929;--s2:#18213a;--s3:#1d2845;--bd:#222d48;--b2:#2a3858;
+  --tx:#e2eaf8;--t2:#8fa4cc;--t3:#4d6090;
+  --blue:#3b82f6;--cyan:#06b6d4;--green:#10b981;--yellow:#f59e0b;--red:#ef4444;--purple:#8b5cf6;--orange:#f97316;
+  --bld:rgba(59,130,246,.11);--gld:rgba(16,185,129,.11);--yld:rgba(245,158,11,.11);--rld:rgba(239,68,68,.11);--pld:rgba(139,92,246,.11);--cld:rgba(6,182,212,.11);--old:rgba(249,115,22,.11);
+  --sw:220px;--th:52px;--r:10px;--fn:'Kanit',sans-serif;--mo:'JetBrains Mono',monospace;
+  --ease:.18s cubic-bezier(.4,0,.2,1);--sh:0 2px 12px rgba(0,0,0,.44);--shlg:0 8px 40px rgba(0,0,0,.54);
 }
 [data-theme=light]{
-  --bg:#f0f2f5;--sf:#fff;--s2:#f6f8fa;--s3:#eaeef2;--bd:#d0d7de;--b2:#c6cdd4;
-  --tx:#24292f;--t2:#57606a;--t3:#8c959f;
-  --bld:rgba(68,147,248,.1);--gld:rgba(45,186,78,.1);--yld:rgba(210,153,34,.1);
-  --rld:rgba(248,81,73,.1);--pld:rgba(188,140,255,.1);--sh:0 1px 3px rgba(0,0,0,.1);
+  --bg:#eef2f8;--sf:#fff;--s2:#f4f7fc;--s3:#eaeff8;--bd:#dde5f5;--b2:#ccd7ef;
+  --tx:#1a2540;--t2:#4a5e88;--t3:#8aa0c8;
+  --bld:rgba(59,130,246,.08);--gld:rgba(16,185,129,.08);--yld:rgba(245,158,11,.08);--rld:rgba(239,68,68,.08);--pld:rgba(139,92,246,.08);--cld:rgba(6,182,212,.08);--old:rgba(249,115,22,.08);
+  --sh:0 2px 12px rgba(0,0,0,.08);--shlg:0 8px 40px rgba(0,0,0,.12);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;font-family:var(--fn);background:var(--bg);color:var(--tx);overflow:hidden}
-::-webkit-scrollbar{width:5px;height:5px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--bd);border-radius:10px}
+html,body{height:100%}
+body{font-family:var(--fn);background:var(--bg);color:var(--tx);transition:background var(--ease),color var(--ease);overflow-x:hidden}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-thumb{background:var(--b2);border-radius:99px}
 
-/* ── LOGIN ── */
-#lp{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
-  background:radial-gradient(ellipse 80% 60% at 30% 40%,rgba(68,147,248,.08) 0%,transparent 60%),var(--bg);
-  z-index:1000}
-.lbox{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:36px 32px;
-  width:380px;max-width:92vw;box-shadow:var(--shlg)}
-.lbox-ic{width:52px;height:52px;border-radius:10px;
-  background:linear-gradient(135deg,#1a56db,#0891b2);
-  display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 12px}
-.lbox h1{text-align:center;font-size:18px;font-weight:700;margin-bottom:2px}
-.lbox p{text-align:center;font-size:11px;color:var(--t3);margin-bottom:24px}
-.lbox label{font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;
-  letter-spacing:.05em;display:block;margin-bottom:4px}
-.lbox input[type=text],.lbox input[type=password]{
-  width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:6px;
-  padding:9px 11px;color:var(--tx);font-size:13px;font-family:var(--fn);
-  margin-bottom:10px;transition:border-color var(--ease)}
-.lbox input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(68,147,248,.12)}
-.lbtn{width:100%;padding:10px;background:#1a56db;border:none;border-radius:6px;
-  color:#fff;font-size:13px;font-weight:700;font-family:var(--fn);cursor:pointer;
-  transition:background var(--ease)}
-.lbtn:hover{background:#1648c8}
-.lerr{background:var(--rld);border:1px solid rgba(248,81,73,.3);border-radius:6px;
-  padding:7px 11px;color:#f85149;font-size:12px;margin-top:8px;display:none}
-.ldemo{margin-top:12px;padding:10px;background:var(--s2);border:1px solid var(--bd);
-  border-radius:6px;font-size:11px;color:var(--t3);line-height:1.9}
-.ldemo b{color:var(--blue);font-family:var(--mo)}
+/* LOGIN */
+#lp{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse 60% 50% at 25% 20%,rgba(59,130,246,.18) 0%,transparent 70%),radial-gradient(ellipse 50% 40% at 75% 80%,rgba(6,182,212,.12) 0%,transparent 70%),var(--bg)}
+.lc{background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:42px 38px;width:390px;max-width:94vw;box-shadow:0 0 0 1px rgba(59,130,246,.1),var(--shlg);animation:popUp .44s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popUp{from{opacity:0;transform:scale(.94) translateY(12px)}to{opacity:1;transform:none}}
+.lc-ic{width:58px;height:58px;background:linear-gradient(135deg,#1d4ed8,#06b6d4);border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:25px;margin:0 auto 14px;box-shadow:0 0 26px rgba(59,130,246,.35)}
+.lc h1{text-align:center;font-size:19px;font-weight:700;margin-bottom:3px}.lc p{text-align:center;font-size:12px;color:var(--t3);margin-bottom:26px}
+.lc label{display:block;font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px}
+.lc input{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:10px 12px;color:var(--tx);font-size:14px;font-family:var(--fn);margin-bottom:11px;transition:border-color var(--ease),box-shadow var(--ease)}
+.lc input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+.lc-btn{width:100%;padding:12px;background:linear-gradient(135deg,#2563eb,#06b6d4);border:none;border-radius:7px;color:#fff;font-size:14px;font-weight:700;font-family:var(--fn);cursor:pointer;transition:opacity var(--ease)}
+.lc-btn:hover{opacity:.9}.lc-btn:active{transform:scale(.98)}
+.lc-err{background:var(--rld);border:1px solid rgba(239,68,68,.3);border-radius:7px;padding:8px 12px;color:#fca5a5;font-size:12px;margin-top:8px;display:none}
+.lc-demo{margin-top:14px;padding:11px;background:var(--s2);border:1px solid var(--bd);border-radius:7px;font-size:11px;color:var(--t3);line-height:2}
+.lc-demo b{color:var(--cyan);font-family:var(--mo)}
 
-/* ── APP LAYOUT ── */
-#app{display:none;height:100vh;overflow:hidden}
-.wrap{display:grid;grid-template-columns:220px 1fr;grid-template-rows:52px 1fr;height:100vh}
+/* LAYOUT */
+#app{display:none}
+.layout{display:flex;height:100vh;overflow:hidden}
 
-/* ── SIDEBAR ── */
-.sb{grid-column:1;grid-row:1/3;background:var(--sf);border-right:1px solid var(--bd);
-  display:flex;flex-direction:column;overflow:hidden}
-.sb-brand{display:flex;align-items:center;gap:9px;padding:12px 14px;
-  border-bottom:1px solid var(--bd);min-height:52px}
-.sb-logo{width:28px;height:28px;border-radius:6px;
-  background:linear-gradient(135deg,#1a56db,#0891b2);
-  display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
-.sb-nm{font-size:12px;font-weight:700}.sb-vr{font-size:9px;color:var(--t3);font-family:var(--mo)}
-.sb-nav{flex:1;padding:8px 6px;overflow-y:auto}
-.sb-sec{margin-bottom:12px}
-.sb-lbl{font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;
-  letter-spacing:.1em;padding:0 8px;margin-bottom:2px}
-.nb{display:flex;align-items:center;gap:7px;width:100%;padding:6px 8px;
-  border-radius:6px;border:none;background:transparent;color:var(--t2);
-  font-size:12px;font-weight:500;font-family:var(--fn);cursor:pointer;
-  text-align:left;position:relative;transition:all var(--ease)}
-.nb:hover{background:var(--s2);color:var(--tx)}
-.nb.on{background:var(--bld);color:var(--blue);font-weight:600}
-.nb.on::before{content:'';position:absolute;left:0;top:20%;bottom:20%;
-  width:3px;background:var(--blue);border-radius:0 3px 3px 0}
-.nb-ic{font-size:13px;width:16px;text-align:center;flex-shrink:0}
-.nb-bdg{margin-left:auto;font-size:9px;font-weight:700;padding:1px 5px;
-  border-radius:10px;background:var(--rld);color:var(--red)}
-.sb-foot{padding:8px 6px;border-top:1px solid var(--bd)}
-.urow{display:flex;align-items:center;gap:8px;padding:7px 8px;
-  background:var(--s2);border-radius:6px;margin-bottom:6px}
-.uav{width:24px;height:24px;border-radius:50%;
-  background:linear-gradient(135deg,var(--blue),#0891b2);
-  display:flex;align-items:center;justify-content:center;
-  font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
-.unm{font-size:12px;font-weight:700}.url{font-size:10px;color:var(--t3)}
-.lout{width:100%;display:flex;align-items:center;gap:6px;padding:5px 8px;
-  border-radius:5px;border:1px solid var(--bd);background:transparent;
-  color:var(--t3);font-size:11px;font-family:var(--fn);cursor:pointer;
-  transition:all var(--ease)}
-.lout:hover{background:var(--rld);color:var(--red);border-color:rgba(248,81,73,.4)}
+/* SIDEBAR */
+.sb{width:var(--sw);background:var(--sf);border-right:1px solid var(--bd);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+.sb-brand{display:flex;align-items:center;gap:9px;padding:13px 14px;border-bottom:1px solid var(--bd);min-height:var(--th)}
+.sb-logo{width:30px;height:30px;background:linear-gradient(135deg,#1d4ed8,#06b6d4);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.sb-name{font-size:12px;font-weight:700}.sb-ver{font-size:9px;color:var(--t3);font-family:var(--mo)}
+.sb-nav{flex:1;padding:9px 7px;overflow-y:auto}
+.sb-sec{margin-bottom:14px}
+.sb-lbl{font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;padding:0 7px;margin-bottom:3px}
+.nb{display:flex;align-items:center;gap:8px;width:100%;padding:7px 9px;border-radius:7px;border:none;background:transparent;color:var(--t2);font-size:12.5px;font-weight:500;font-family:var(--fn);cursor:pointer;transition:all var(--ease);text-align:left;position:relative}
+.nb:hover{background:var(--s2);color:var(--tx)}.nb.on{background:var(--bld);color:var(--blue);font-weight:600}
+.nb.on::before{content:'';position:absolute;left:0;top:22%;bottom:22%;width:3px;background:var(--blue);border-radius:0 3px 3px 0}
+.nb-ic{font-size:13px;width:17px;text-align:center;flex-shrink:0}
+.nb-bdg{margin-left:auto;font-size:9.5px;font-weight:700;font-family:var(--mo);padding:1px 5px;border-radius:9px;min-width:16px;text-align:center;background:var(--rld);color:var(--red)}
+.sb-foot{padding:9px 7px;border-top:1px solid var(--bd)}
+.uc{display:flex;align-items:center;gap:8px;padding:8px 9px;background:var(--s2);border-radius:7px;margin-bottom:6px}
+.ua{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+.un{font-size:12px;font-weight:700}.ur{font-size:10px;color:var(--t3);font-family:var(--mo)}
+.lout{width:100%;display:flex;align-items:center;gap:6px;padding:6px 9px;border-radius:6px;border:1px solid var(--bd);background:transparent;color:var(--t3);font-size:11px;font-family:var(--fn);cursor:pointer;transition:all var(--ease)}
+.lout:hover{background:var(--rld);color:var(--red);border-color:var(--red)}
 
-/* ── TOPBAR ── */
-.topbar{grid-column:2;grid-row:1;background:var(--sf);border-bottom:1px solid var(--bd);
-  display:flex;align-items:center;justify-content:space-between;padding:0 20px}
-.tb-l{display:flex;align-items:center;gap:10px}
-.tb-title{font-size:14px;font-weight:700}.tb-sub{font-size:11px;color:var(--t3)}
-.tb-r{display:flex;align-items:center;gap:8px}
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.tb{height:var(--th);background:var(--sf);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;padding:0 20px;flex-shrink:0;box-shadow:var(--sh)}
+.tb-l{display:flex;align-items:center;gap:9px;min-width:0}
+.tb-title{font-size:14px;font-weight:700;white-space:nowrap}.tb-sub{font-size:11px;color:var(--t3);white-space:nowrap}
+.dept-tag{display:flex;align-items:center;gap:5px;padding:3px 9px;background:var(--s2);border:1px solid var(--bd);border-radius:20px;font-size:11px;font-weight:600;color:var(--t2);flex-shrink:0}
+.dept-dot{width:6px;height:6px;border-radius:50%}
+.tb-r{display:flex;align-items:center;gap:7px;flex-shrink:0}
 .tb-clk{font-size:11px;color:var(--t3);font-family:var(--mo)}
-.ib{width:30px;height:30px;border-radius:6px;border:1px solid var(--bd);
-  background:transparent;color:var(--t2);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;font-size:13px;
-  transition:all var(--ease)}
-.ib:hover{background:var(--s2)}
+.ic-btn{width:31px;height:31px;border-radius:6px;border:1px solid var(--bd);background:transparent;color:var(--t2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all var(--ease)}
+.ic-btn:hover{background:var(--s2)}
 
-/* ── CONTENT ── */
-.content{grid-column:2;grid-row:2;overflow-y:auto;padding:18px 20px}
-.page{display:none;animation:fi .15s ease}.page.on{display:block}
-@keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+/* PAGE SCROLL AREA */
+.pc{flex:1;overflow-y:auto;overflow-x:hidden;padding:18px 20px}
+.page{display:none;animation:fi .17s ease}.page.on{display:block}
+@keyframes fi{from{opacity:0}to{opacity:1}}
 
-/* ── BUTTONS ── */
-.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;
-  border-radius:6px;border:1px solid transparent;font-size:12px;
-  font-weight:600;font-family:var(--fn);cursor:pointer;
-  transition:all var(--ease);white-space:nowrap}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:6px;border:1px solid transparent;font-size:12px;font-weight:700;font-family:var(--fn);cursor:pointer;transition:all var(--ease);white-space:nowrap}
 .btn:active{transform:scale(.97)}
-.btn-blue{background:#1a56db;color:#fff;border-color:#1a56db}.btn-blue:hover{background:#1648c8}
-.btn-grn{background:#2dba4e;color:#fff;border-color:#2dba4e}.btn-grn:hover{background:#27a444}
+.btn-pri{background:var(--blue);color:#fff}.btn-pri:hover{opacity:.88}
 .btn-out{background:transparent;border-color:var(--bd);color:var(--t2)}.btn-out:hover{background:var(--s2)}
-.btn-red{background:transparent;border-color:rgba(248,81,73,.4);color:var(--red)}.btn-red:hover{background:var(--rld)}
-.btn-pur{background:#6e40c9;color:#fff;border-color:#6e40c9}.btn-pur:hover{opacity:.88}
+.btn-grn{background:var(--green);color:#fff}.btn-grn:hover{opacity:.88}
+.btn-red{background:transparent;border-color:var(--red);color:var(--red)}.btn-red:hover{background:var(--rld)}
+.btn-yel{background:var(--yellow);color:#000}.btn-yel:hover{opacity:.88}
+.btn-pur{background:var(--purple);color:#fff}.btn-pur:hover{opacity:.88}
 .btn-sm{padding:4px 9px;font-size:11px}.btn-xs{padding:2px 7px;font-size:10px}
 
-/* ── TOOLBAR ── */
-.tbar{display:flex;align-items:center;justify-content:space-between;
-  flex-wrap:wrap;gap:8px;margin-bottom:14px}
-.tbar-l,.tbar-r{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.fsel,.finp{background:var(--s2);border:1px solid var(--bd);border-radius:6px;
-  padding:5px 9px;color:var(--tx);font-size:12px;font-family:var(--fn);
-  transition:border-color var(--ease);cursor:pointer}
+/* TOOLBAR */
+.tool-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.tool-l,.tool-r{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.fsel,.finp{background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:5px 9px;color:var(--tx);font-size:12px;font-family:var(--fn);transition:border-color var(--ease)}
 .fsel:focus,.finp:focus{outline:none;border-color:var(--blue)}
-.finp{min-width:150px;cursor:text}
+.finp{min-width:160px}
 
-/* ── KPI CARDS ── */
-.krow{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));
-  gap:10px;margin-bottom:16px}
-.kc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);
-  padding:14px 15px;box-shadow:var(--sh);display:flex;flex-direction:column;
-  min-height:96px;position:relative;overflow:hidden;transition:box-shadow var(--ease)}
+/* KPI */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:11px;margin-bottom:16px;align-items:stretch}
+.kc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;box-shadow:var(--sh);transition:box-shadow var(--ease);position:relative;overflow:hidden;min-height:110px}
 .kc:hover{box-shadow:var(--shlg)}
-.kc::after{content:'';position:absolute;right:-16px;bottom:-16px;
-  width:64px;height:64px;border-radius:50%;opacity:.06}
-.kc.b::after{background:var(--blue)}.kc.g::after{background:var(--green)}
-.kc.y::after{background:var(--yellow)}.kc.r::after{background:var(--red)}
-.kc.p::after{background:var(--purple)}.kc.c::after{background:var(--cyan)}
-.kc.o::after{background:var(--orange)}
-.ki{width:30px;height:30px;border-radius:7px;
-  display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
-.ki.b{background:var(--bld)}.ki.g{background:var(--gld)}.ki.y{background:var(--yld)}
-.ki.r{background:var(--rld)}.ki.p{background:var(--pld)}.ki.c{background:var(--cld)}
+.kc::after{content:'';position:absolute;right:-22px;bottom:-22px;width:80px;height:80px;border-radius:50%;opacity:.07}
+.kc.b::after{background:var(--blue)}.kc.g::after{background:var(--green)}.kc.y::after{background:var(--yellow)}.kc.r::after{background:var(--red)}.kc.p::after{background:var(--purple)}.kc.c::after{background:var(--cyan)}.kc.o::after{background:var(--orange)}
 .kc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:auto}
-.kv{font-size:20px;font-weight:700;letter-spacing:-.5px;font-family:var(--mo);margin-top:8px}
-.kl{font-size:11px;color:var(--t2);margin-top:2px;font-weight:500}
-.ks{font-size:10px;color:var(--t3);margin-top:6px;padding-top:6px;
-  border-top:1px solid var(--bd)}
+.ki{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.ki.b{background:var(--bld)}.ki.g{background:var(--gld)}.ki.y{background:var(--yld)}.ki.r{background:var(--rld)}.ki.p{background:var(--pld)}.ki.c{background:var(--cld)}.ki.o{background:var(--old)}
+.kb{font-size:10px;font-weight:700;padding:2px 6px;border-radius:9px;font-family:var(--mo)}
+.kb.up{background:var(--gld);color:var(--green)}.kb.dn{background:var(--rld);color:var(--red)}.kb.n{background:var(--bld);color:var(--blue)}
+.kv{font-size:20px;font-weight:800;letter-spacing:-.5px;font-family:var(--mo);margin-top:9px;line-height:1.1}
+.kl{font-size:12px;color:var(--t2);margin-top:3px;font-weight:500}
+.ks{font-size:10px;color:var(--t3);margin-top:7px;padding-top:7px;border-top:1px solid var(--bd)}
 
-/* ── CHARTS ── */
+/* CHARTS */
 .cg2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
-.cc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);
-  padding:14px;box-shadow:var(--sh)}
-.ch{margin-bottom:10px}
-.ct{font-size:13px;font-weight:700}.cs{font-size:11px;color:var(--t3);margin-top:2px}
+.cc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:14px;box-shadow:var(--sh)}
+.ch{margin-bottom:10px}.ct{font-size:13px;font-weight:700}.cs{font-size:11px;color:var(--t3);margin-top:1px}
 
-/* ── TABLE ── */
-.tc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);
-  box-shadow:var(--sh);overflow:hidden;margin-bottom:14px}
-.tc-head{display:flex;align-items:center;justify-content:space-between;
-  flex-wrap:wrap;gap:8px;padding:11px 15px;border-bottom:1px solid var(--bd)}
-.tc-title{font-size:13px;font-weight:700}
-.tc-scroll{overflow-x:auto;max-height:400px;overflow-y:auto}
+/* DEPT OVERVIEW */
+.dc-row{display:grid;grid-template-columns:repeat(6,1fr);gap:9px;margin-bottom:16px}
+.dc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:13px;cursor:pointer;transition:all var(--ease);display:flex;flex-direction:column;gap:5px;min-height:96px}
+.dc:hover{border-color:var(--b2);box-shadow:var(--shlg);transform:translateY(-2px)}
+.dc-ic{font-size:18px}.dc-nm{font-size:11px;font-weight:700}
+.dc-vl{font-size:15px;font-weight:800;font-family:var(--mo);margin-top:auto}
+.dc-lb{font-size:10px;color:var(--t3)}
+
+/* TABLE */
+.tc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:14px}
+.th2{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:11px 15px;border-bottom:1px solid var(--bd)}
+.tt{font-size:13px;font-weight:700}
+.tscr{overflow-x:auto;max-height:380px;overflow-y:auto}
 .dt{width:100%;border-collapse:collapse;font-size:12px}
-.dt th{background:var(--s2);color:var(--t3);font-weight:700;font-size:10px;
-  text-transform:uppercase;letter-spacing:.05em;padding:7px 11px;
-  text-align:left;border-bottom:1px solid var(--bd);white-space:nowrap;
-  position:sticky;top:0;z-index:1}
-.dt td{padding:7px 11px;border-bottom:1px solid var(--bd);color:var(--t2);
-  vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
-.dt tr:last-child td{border-bottom:none}
-.dt tr:hover td{background:var(--s2)}
-.tc-foot{display:flex;align-items:center;justify-content:space-between;
-  padding:8px 15px;border-top:1px solid var(--bd);font-size:11px;color:var(--t3)}
-.pgr{display:flex;gap:3px}
-.pgb{padding:3px 7px;border-radius:4px;border:1px solid var(--bd);
-  background:transparent;color:var(--t2);cursor:pointer;font-size:10px;
-  font-family:var(--fn);transition:all var(--ease)}
+.dt th{background:var(--s2);color:var(--t3);font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.06em;padding:7px 11px;text-align:left;border-bottom:1px solid var(--bd);white-space:nowrap;position:sticky;top:0;z-index:1}
+.dt td{padding:7px 11px;border-bottom:1px solid var(--bd);color:var(--t2);vertical-align:middle;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dt tr:last-child td{border-bottom:none}.dt tr:hover td{background:var(--s2)}
+.tf{display:flex;align-items:center;justify-content:space-between;padding:8px 15px;border-top:1px solid var(--bd);font-size:11px;color:var(--t3)}
+.pg{display:flex;gap:3px}
+.pgb{padding:3px 7px;border-radius:4px;border:1px solid var(--bd);background:transparent;color:var(--t2);cursor:pointer;font-size:10px;font-family:var(--fn);transition:all var(--ease)}
 .pgb:hover,.pgb.on{background:var(--blue);color:#fff;border-color:var(--blue)}
 
-/* ── PILLS ── */
-.pill{display:inline-flex;align-items:center;font-size:10px;font-weight:700;
-  padding:2px 7px;border-radius:20px;white-space:nowrap}
-.pill-b{background:var(--bld);color:var(--blue)}
-.pill-g{background:var(--gld);color:var(--green)}
-.pill-y{background:var(--yld);color:var(--yellow)}
-.pill-r{background:var(--rld);color:var(--red)}
-.pill-p{background:var(--pld);color:var(--purple)}
-.pill-c{background:var(--cld);color:var(--cyan)}
-.pill-gray{background:var(--s3);color:var(--t3)}
+/* PILLS */
+.p{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;white-space:nowrap}
+.pb{background:var(--bld);color:var(--blue)}.pg2{background:var(--gld);color:var(--green)}
+.py{background:var(--yld);color:var(--yellow)}.pr{background:var(--rld);color:var(--red)}
+.pp{background:var(--pld);color:var(--purple)}.pc2{background:var(--cld);color:var(--cyan)}
+.pgr{background:var(--s3);color:var(--t3)}
 
-/* ── AUTOCOMPLETE ── */
-.ac-wrap{position:relative}
-.ac-drop{position:absolute;top:calc(100% + 3px);left:0;right:0;
-  background:var(--sf);border:1px solid var(--bd);border-radius:7px;
-  max-height:200px;overflow-y:auto;z-index:9999;
-  box-shadow:var(--shlg);display:none}
-.ac-drop.show{display:block}
-.ac-item{padding:7px 11px;font-size:12px;cursor:pointer;
-  border-bottom:1px solid var(--bd);color:var(--tx);
-  transition:background var(--ease)}
-.ac-item:last-child{border-bottom:none}
-.ac-item:hover,.ac-item.hi{background:var(--bld);color:var(--blue)}
-.ac-item b{color:var(--blue)}
+/* BAR LIST */
+.bl{display:flex;flex-direction:column;gap:7px}
+.brow{display:flex;align-items:center;gap:8px}
+.bname{font-size:11px;color:var(--t2);width:105px;flex-shrink:0;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bwrap{flex:1;height:6px;background:var(--s3);border-radius:4px;overflow:hidden}
+.bbar{height:100%;border-radius:4px;transition:width .8s ease}
+.bval{font-size:10px;font-family:var(--mo);color:var(--t3);width:48px;text-align:right;flex-shrink:0}
 
-/* ── MODAL ── */
-.mbg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;
-  display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+/* PROGRESS */
+.pw{background:var(--s3);border-radius:4px;height:5px;overflow:hidden;margin-top:2px}
+.pb2{height:100%;border-radius:4px;transition:width .8s ease}
+
+/* LOG */
+.lr{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--bd)}.lr:last-child{border-bottom:none}
+.ld{width:7px;height:7px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.la{font-size:12px;font-weight:700}.ldet{font-size:10px;color:var(--t3);margin-top:1px}
+.lts{font-size:10px;color:var(--t3);white-space:nowrap;font-family:var(--mo)}
+
+/* ADMIN */
+.adm2{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.admc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);box-shadow:var(--sh)}
+.adm-h{display:flex;align-items:center;justify-content:space-between;padding:12px 15px;border-bottom:1px solid var(--bd)}
+.adm-ht{font-size:13px;font-weight:700}.adm-b{padding:14px}
+.ur2{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--bd)}.ur2:last-child{border-bottom:none}
+.pr2{display:flex;align-items:center;justify-content:space-between;padding:8px 11px;background:var(--s2);border-radius:6px;border:1px solid var(--bd);margin-bottom:6px}
+.prt{font-size:12px;font-weight:700}.prst{font-size:10px;color:var(--t3)}
+.ptog{padding:3px 8px;border-radius:4px;border:1px solid;background:transparent;font-size:10px;font-weight:700;cursor:pointer;font-family:var(--fn);transition:all var(--ease)}
+.ptog.on{background:var(--gld);color:var(--green);border-color:var(--green)}.ptog.off{background:var(--rld);color:var(--red);border-color:var(--red)}
+.rsel{background:var(--s2);border:1px solid var(--bd);border-radius:5px;padding:3px 6px;font-size:11px;font-family:var(--fn);color:var(--tx);cursor:pointer}
+
+/* MASTER TABLE */
+.mrow-item{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--bd);transition:background var(--ease)}
+.mrow-item:hover{background:var(--s2)}.mrow-item:last-child{border-bottom:none}
+.mrow-nm{flex:1;font-size:12px;font-weight:600}.mrow-sub{font-size:11px;color:var(--t3);margin-top:1px}
+.mrow-code{font-size:11px;font-family:var(--mo);color:var(--t3);width:90px;flex-shrink:0}
+
+/* MODAL */
+.mbg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
 .mbg.open{display:flex}
-.mbox{background:var(--sf);border:1px solid var(--bd);border-radius:12px;
-  padding:22px;width:560px;max-width:95vw;box-shadow:var(--shlg);
-  max-height:90vh;overflow-y:auto;animation:fi .2s ease}
-.mtt{font-size:15px;font-weight:700;margin-bottom:16px;
-  display:flex;align-items:center;justify-content:space-between}
-.mg2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mbox{background:var(--sf);border:1px solid var(--bd);border-radius:13px;padding:22px;width:560px;max-width:96vw;box-shadow:var(--shlg);animation:popUp .22s ease;max-height:88vh;overflow-y:auto}
+.mtt{font-size:15px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mgrid.full{grid-template-columns:1fr}
 .mfg{display:flex;flex-direction:column;gap:4px}
-.mfg label{font-size:10px;font-weight:700;color:var(--t3);
-  text-transform:uppercase;letter-spacing:.06em}
-.mi{width:100%;background:var(--s2);border:1px solid var(--bd);
-  border-radius:6px;padding:8px 10px;color:var(--tx);
-  font-size:13px;font-family:var(--fn);transition:border-color var(--ease)}
-.mi:focus{outline:none;border-color:var(--blue);
-  box-shadow:0 0 0 3px rgba(68,147,248,.12)}
+.mfg label{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em}
+.mi{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:8px 10px;color:var(--tx);font-size:13px;font-family:var(--fn);transition:border-color var(--ease)}
+.mi:focus{outline:none;border-color:var(--blue)}
 select.mi{cursor:pointer}
 .mfoot{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.msep{height:1px;background:var(--bd);margin:12px 0}
 
-/* ── TOAST ── */
-.toast-c{position:fixed;bottom:16px;right:16px;z-index:9999;
-  display:flex;flex-direction:column;gap:6px;pointer-events:none}
-.toast{padding:10px 14px;border-radius:8px;font-size:12px;font-weight:600;
-  box-shadow:var(--shlg);background:var(--sf);border:1px solid var(--bd);
-  animation:fi .2s ease;max-width:280px}
+/* AUTOCOMPLETE */
+.ac-wrap{position:relative}
+.ac-list{position:absolute;top:100%;left:0;right:0;background:var(--sf);border:1px solid var(--bd);border-radius:7px;max-height:180px;overflow-y:auto;z-index:500;box-shadow:var(--shlg);display:none}
+.ac-list.open{display:block}
+.ac-item{padding:7px 11px;font-size:12px;cursor:pointer;transition:background var(--ease);border-bottom:1px solid var(--bd)}
+.ac-item:last-child{border-bottom:none}
+.ac-item:hover,.ac-item.sel{background:var(--bld);color:var(--blue)}
+.ac-item mark{background:transparent;color:var(--blue);font-weight:700}
 
-/* ── ALERT STRIP ── */
-.as{display:flex;align-items:center;gap:10px;padding:10px 13px;
-  border-radius:8px;margin-bottom:7px;border:1px solid transparent}
-.as.r{background:var(--rld);border-color:rgba(248,81,73,.2)}
-.as.y{background:var(--yld);border-color:rgba(210,153,34,.2)}
-.as.g{background:var(--gld);border-color:rgba(45,186,78,.2)}
-.as-ic{font-size:16px;flex-shrink:0}
-.as-txt strong{font-size:12px;font-weight:700}
-.as-txt p{font-size:11px;color:var(--t2);margin-top:1px}
+/* TOAST */
+.toast{position:fixed;bottom:16px;right:16px;padding:10px 15px;border-radius:8px;font-size:12px;font-weight:700;box-shadow:var(--shlg);z-index:9999;animation:slideUp .25s ease;pointer-events:none;background:var(--s2);border:1px solid var(--bd);color:var(--tx);max-width:300px}
+@keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.noacc{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;gap:11px;text-align:center}
+.noacc-ic{font-size:48px;opacity:.25}
 
-@media(max-width:1100px){.cg2{grid-template-columns:1fr}}
-@media(max-width:700px){.krow{grid-template-columns:repeat(2,1fr)}
-  .wrap{grid-template-columns:1fr}
-  .sb{display:none}}
+/* AS - alert strips */
+.as{display:flex;align-items:center;gap:10px;padding:10px 13px;border-radius:8px;margin-bottom:7px;border:1px solid transparent}
+.as.r{background:var(--rld);border-color:rgba(239,68,68,.2)}.as.y{background:var(--yld);border-color:rgba(245,158,11,.2)}.as.g{background:var(--gld);border-color:rgba(16,185,129,.2)}
+.as-ic{font-size:16px;flex-shrink:0}.as-txt strong{font-size:12px;font-weight:700}.as-txt p{font-size:11px;color:var(--t2);margin-top:1px}
+
+@media(max-width:1100px){.cg2{grid-template-columns:1fr}.dc-row{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:700px){.adm2,.mgrid{grid-template-columns:1fr}.dc-row{grid-template-columns:repeat(2,1fr)}.kpi-row{grid-template-columns:repeat(2,1fr)}}
 </style>
+</head>
+<body>
+
+<div id="lp">
+  <div class="lc">
+    <div class="lc-ic">🏭</div><h1>WMS Dashboard</h1><p>Warehouse Management System · 2026</p>
+    <label>Username</label><input id="lu" type="text" value="admin">
+    <label>Password</label><input id="lpass" type="password" value="admin123">
+    <button class="lc-btn" onclick="doLogin()">🔐 เข้าสู่ระบบ</button>
+    <div class="lc-err" id="lerr">Username หรือ Password ไม่ถูกต้อง</div>
+    <div class="lc-demo"><b>admin</b>/admin123 · <b>manager</b>/mgr456 · <b>ops</b>/ops789 · <b>viewer</b>/view000</div>
+  </div>
+</div>
+
+<div id="app">
+ <div class="layout">
+  <aside class="sb">
+    <div class="sb-brand">
+      <div class="sb-logo">🏭</div>
+      <div><div class="sb-name">WMS</div><div class="sb-ver">v4.0 · 2026</div></div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-sec">
+        <div class="sb-lbl">Overview</div>
+        <button class="nb on" onclick="go('overview')" id="nb-overview"><span class="nb-ic">🏠</span>ภาพรวม</button>
+      </div>
+      <div class="sb-sec">
+        <div class="sb-lbl">แผนก</div>
+        <button class="nb" onclick="go('transport')"  id="nb-transport"><span class="nb-ic">🚚</span>ขนส่ง</button>
+        <button class="nb" onclick="go('outbound')"   id="nb-outbound"><span class="nb-ic">📤</span>Outbound</button>
+        <button class="nb" onclick="go('inbound')"    id="nb-inbound"><span class="nb-ic">📥</span>Inbound</button>
+        <button class="nb" onclick="go('online')"     id="nb-online"><span class="nb-ic">🛒</span>Online</button>
+        <button class="nb" onclick="go('inventory')"  id="nb-inventory"><span class="nb-ic">📦</span>Inventory</button>
+        <button class="nb" onclick="go('returns')"    id="nb-returns"><span class="nb-ic">↩️</span>Return<span class="nb-bdg" id="bdg-rt">0</span></button>
+        <button class="nb" onclick="go('balance')"  id="nb-balance"><span class="nb-ic">📊</span>Balance</button>
+      </div>
+      <div class="sb-sec">
+        <div class="sb-lbl">Master Data</div>
+        <button class="nb" onclick="go('m-product')"  id="nb-m-product"><span class="nb-ic">🗂️</span>Master Product</button>
+        <button class="nb" onclick="go('m-warehouse')" id="nb-m-warehouse"><span class="nb-ic">🏭</span>Master Warehouse</button>
+        <button class="nb" onclick="go('m-carrier')"  id="nb-m-carrier"><span class="nb-ic">🚛</span>Master Carrier</button>
+      </div>
+      <div class="sb-sec">
+        <div class="sb-lbl">ระบบ</div>
+        <button class="nb" onclick="go('alerts')"  id="nb-alerts"><span class="nb-ic">🔔</span>แจ้งเตือน<span class="nb-bdg" id="bdg-al">0</span></button>
+        <button class="nb" onclick="go('logs')"    id="nb-logs"><span class="nb-ic">📋</span>Activity Log</button>
+        <button class="nb" onclick="go('admin')"   id="nb-admin" style="display:none"><span class="nb-ic">⚙️</span>จัดการสิทธิ์</button>
+      </div>
+    </nav>
+    <div class="sb-foot">
+      <div class="uc"><div class="ua" id="uA">A</div><div><div class="un" id="uN">Admin</div><div class="ur" id="uR">admin</div></div></div>
+      <button class="lout" onclick="doLogout()">🚪 ออกจากระบบ</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="tb">
+      <div class="tb-l">
+        <div><div class="tb-title" id="pgT">ภาพรวม</div><div class="tb-sub" id="pgS">ข้อมูลรวม</div></div>
+        <div class="dept-tag" id="dTag" style="display:none"><div class="dept-dot" id="dDot"></div><span id="dNm"></span></div>
+      </div>
+      <div class="tb-r">
+        <span class="tb-clk" id="clk"></span>
+        <button class="ic-btn" onclick="toggleTheme()" id="tmBtn">🌙</button>
+      </div>
+    </div>
+
+    <div class="pc">
+
+<!-- ═══ OVERVIEW ═══ -->
+<div class="page on" id="pg-overview">
+  <div class="dc-row" id="dcRow"></div>
+  <div class="kpi-row" id="ov-kpi"></div>
+  <div class="cg2">
+    <div class="cc"><div class="ch"><div class="ct">📊 Inbound/Outbound รายเดือน</div></div><canvas id="ovMC" height="150"></canvas></div>
+    <div class="cc"><div class="ch"><div class="ct">📦 Stock แยกประเภท</div></div><canvas id="ovPC" height="150"></canvas></div>
+  </div>
+  <div id="ov-al"></div>
+</div>
+
+<!-- ═══ TRANSPORT ═══ -->
+<div class="page" id="pg-transport">
+  <div class="tool-row">
+    <div class="tool-l">
+      <select class="fsel" id="tr-m" onchange="renderTR()"><option value="all">ทุกเดือน</option></select>
+      <select class="fsel" id="tr-z" onchange="renderTR()"><option value="all">ทุก Zone</option></select>
+      <select class="fsel" id="tr-ch" onchange="renderTR()"><option value="all">ทุก Channel</option><option value="Lalamove">Lalamove</option><option value="ส่งด่วน">ส่งด่วน</option></select>
+      <input class="finp" id="tr-q" placeholder="🔍 ค้นหาสาขา..." oninput="renderTR()">
+    </div>
+    <div class="tool-r">
+      <button class="btn btn-grn" onclick="openCrud('transport',null)">➕ เพิ่มรายการ</button>
+      <label class="btn btn-pur" style="cursor:pointer">📂 Import<input type="file" accept=".csv" style="display:none" onchange="doImport('transport',this)"></label>
+      <button class="btn btn-out" onclick="doExport('transport')">📥 Export</button>
+    </div>
+  </div>
+  <div class="kpi-row" id="tr-kpi"></div>
+  <div class="cg2">
+    <div class="cc"><div class="ch"><div class="ct">💰 ค่าขนส่งรายสัปดาห์</div><div class="cs">Lalamove vs ส่งด่วน (ข้อมูลจริง)</div></div><canvas id="trWC" height="150"></canvas></div>
+    <div class="cc"><div class="ch"><div class="ct">🗺️ Zone</div></div><div class="bl" id="trZB" style="margin-top:6px"></div></div>
+  </div>
+  <div class="cg2">
+    <div class="cc"><div class="ch"><div class="ct">🏪 Top 10 สาขา</div></div><canvas id="trBrC" height="180"></canvas></div>
+    <div class="cc"><div class="ch"><div class="ct">🥧 Lalamove vs ส่งด่วน</div></div><canvas id="trChC" height="180"></canvas></div>
+  </div>
+  <div class="tc">
+    <div class="th2"><div class="tt">📋 Raw Data ขนส่ง</div><div style="display:flex;align-items:center;gap:7px"><span id="tr-cnt" style="font-size:11px;color:var(--t3)"></span><div class="pg" id="tr-pg"></div></div></div>
+    <div class="tscr"><table class="dt"><thead><tr><th>ID</th><th>วันที่</th><th>สาขา</th><th>Zone</th><th>ขนส่ง</th><th>Channel</th><th>Type</th><th>ค่าขนส่ง</th><th>จัดการ</th></tr></thead><tbody id="tr-tb"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ═══ OUTBOUND ═══ -->
+<div class="page" id="pg-outbound">
+  <div class="tool-row">
+    <div class="tool-l">
+      <select class="fsel" id="ob-m" onchange="renderOB()"><option value="all">ทุกเดือน</option></select>
+      <select class="fsel" id="ob-wh" onchange="renderOB()"><option value="all">ทุกคลัง/สาขา</option></select>
+      <select class="fsel" id="ob-br" onchange="renderOB()"><option value="all">ทุก Brand</option></select>
+      <input class="finp" id="ob-q" placeholder="🔍 ค้นหา SKU, ชื่อสินค้า..." oninput="renderOB()">
+    </div>
+    <div class="tool-r">
+      <button class="btn btn-grn" onclick="openCrud('outbound',null)">➕ เพิ่มรายการ</button>
+      <label class="btn btn-pur" style="cursor:pointer">📂 Import<input type="file" accept=".csv" style="display:none" onchange="doImport('outbound',this)"></label>
+      <button class="btn btn-out" onclick="doExport('outbound')">📥 Export</button>
+    </div>
+  </div>
+  <div class="kpi-row" id="ob-kpi"></div>
+  <div class="cg2">
+    <div class="cc"><div class="ch"><div class="ct">📤 Outbound รายสัปดาห์</div></div><canvas id="obWC" height="150"></canvas></div>
+    <div class="cc"><div class="ch"><div class="ct">🏷️ แยก Brand</div></div><canvas id="obBrC" height="150"></canvas></div>
+  </div>
+  <div class="tc">
+    <div class="th2"><div class="tt">📋 รายการ Outbound</div><div style="display:flex;align-items:center;gap:7px"><span id="ob-cnt" style="font-size:11px;color:var(--t3)"></span><div class="pg" id="ob-pg"></div></div></div>
+    <div class="tscr"><table class="dt"><thead><tr><th>Order No.</th><th>วันที่</th><th>จาก</th><th>ไป</th><th>SKU</th><th>ชื่อสินค้า</th><th>หมวดหมู่</th><th>Brand</th><th>Type</th><th>จำนวน</th><th>จัดการ</th></tr></thead><tbody id="ob-tb"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ═══ INBOUND ═══ -->
+<div class="page" id="pg-inbound">
+  <div class="tool-row">
+    <div class="tool-l">
+      <select class="fsel" id="ib-m" onchange="renderIB()"><option value="all">ทุกเดือน</option></select>
+      <select class="fsel" id="ib-wh" onchange="renderIB()"><option value="all">ทุกคลัง/สาขา</option></select>
+      <select class="fsel" id="ib-br" onchange="renderIB()"><option value="all">ทุก Brand</option></select>
+      <input class="finp" id="ib-q" placeholder="🔍 ค้นหา SKU, ชื่อสินค้า..." oninput="renderIB()">
+    </div>
+    <div class="tool-r">
+      <button class="btn btn-grn" onclick="openCrud('inbound',null)">➕ เพิ่มรายการ</button>
+      <label class="btn btn-pur" style="cursor:pointer">📂 Import<input type="file" accept=".csv" style="display:none" onchange="doImport('inbound',this)"></label>
+      <button class="btn btn-out" onclick="doExport('inbound')">📥 Export</button>
+    </div>
+  </div>
+  <div class="kpi-row" id="ib-kpi"></div>
+  <div class="cg2">
+    <div class="cc"><div class="ch"><div class="ct">📥 Inbound รายสัปดาห์</div></div><canvas id="ibWC" height="150"></canvas></div>
+    <div class="cc"><div class="ch"><div class="ct">🏷️ แยก Brand</div></div><canvas id="ibBrC" height="150"></canvas></div>
+  </div>
+  <div class="tc">
+    <div class="th2"><div class="tt">📋 รายการ Inbound</div><div style="display:flex;align-items:center;gap:7px"><span id="ib-cnt" style="font-size:11px;color:var(--t3)"></span><div class="pg" id="ib-pg"></div></div></div>
+    <div class="tscr"><table class="dt"><thead><tr><th>ID</th><th>วันที่</th><th>คลัง/สาขา</th><th>SKU</th><th>ชื่อสินค้า</th><th>หมวดหมู่</th><th>Brand</th><th>จำนวน</th><th>สถานะ</th><th>จัดการ</th></tr></thead><tbody id="ib-tb"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ═══ ONLINE ═══ -->
+<div class="page" id="pg-online">
+  <div class="tool-row">
+    <div class="tool-l">
+      <select class="fsel" id="on-m" onchange="renderON()"><option value="all">ทุกเดือน</option><option value="1">ม.ค.</option><option value="2">ก.พ.</option><option value="3">มี.ค.</option><option value="4">เม.ย.</option></select>
+      <select class="fsel" id="on-pl" onchange="renderON()"><option value="all">ทุก Platform</option></select>
+    </div>
+    <div class="tool-r">
+      <button class="btn btn-grn" onclick="openCrud('online',null)">➕ เพิ่มรายการ</button>
+      <label class="btn btn-pur" style="cursor:pointer">📂 Import<input type="file" accept=".csv" style="display:none" onchange="doImport('online',this)"></label>
+      <button class="btn btn-out" onclick="doExport('online')">📥 Export</button>
+    </div>
+  </div>
+  <div class="kpi-row" id="on-kpi"></div>
+  <div class="cg2">
+    <div class="cc"><div class="ch"><div class="ct">📈 Revenue รายสัปดาห์</div></div><canvas id="onWC" height="150"></canvas></div>
+    <div class="cc"><div class="ch"><div class="ct">🥧 Platform</div></div><canvas id="onPC" height="150"></canvas></div>
+  </div>
+  <div class="tc">
+    <div class="th2"><div class="tt">📋 Online Orders</div><div style="display:flex;align-items:center;gap:7px"><span id="on-cnt" style="font-size:11px;color:var(--t3)"></span><div class="pg" id="on-pg"></div></div></div>
+    <div class="tscr"><table class="dt"><thead><tr><th>ID</th><th>วันที่</th><th>Platform</th><th>Zone</th><th>Orders</th><th>Revenue</th><th>Shipping</th><th>Returns</th><th>สถานะ</th><th>จัดการ</th></tr></thead><tbody id="on-tb"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ═══ INVENTORY ═══ -->
+<div class="page" id="pg-inventory">
+  <div class="tool-row">
+    <div class="tool-l">
+      <select class="fsel" id="inv-wh" onchange="renderINV()"><option value="all">ทุกคลัง</option></select>
+      <select class="fsel" id="inv-cat" onchange="renderINV()"><option value="all">ทุกหมวดหมู่</option></select>
+      <select class="fsel" id="inv-al" onchange="renderINV()"><option value="all">ทั้งหมด</option><option value="alert">⚠️ Low Stock</option><option value="ok">✅ ปกติ</option></select>
+      <input class="finp" id="inv-q" placeholder="🔍 ค้นหา SKU, ชื่อ..." oninput="renderINV()">
+    </div>
+    <div class="tool-r">
+      <label class="btn btn-pur" style="cursor:pointer">📂 Import<input type="file" accept=".csv" style="display:none" onchange="doImport('inventory',this)"></label>
+      <button class="btn btn-out" onclick="doExport('inventory')">📥 Export</button>
+    </div>
+  </div>
+  <div class="kpi-row" id="inv-kpi"></div>
+  <div class="cg2">
+    <div class="cc"><div class="ch"><div class="ct">📊 Stock แยกหมวดหมู่</div></div><div class="bl" id="invCB"></div></div>
+    <div class="cc"><div class="ch"><div class="ct">🏭 แยกคลัง</div></div><canvas id="invWC" height="170"></canvas></div>
+  </div>
+  <div class="tc">
+    <div class="th2"><div class="tt">📋 Stock ทั้งหมด</div><div style="display:flex;align-items:center;gap:7px"><span id="inv-cnt" style="font-size:11px;color:var(--t3)"></span><div class="pg" id="inv-pg"></div></div></div>
+    <div class="tscr"><table class="dt"><thead><tr><th>SKU</th><th>ชื่อสินค้า</th><th>หมวดหมู่</th><th>Tag</th><th>คลัง</th><th>จำนวน</th><th>พร้อมขาย</th><th>ราคา</th><th>สถานะ</th></tr></thead><tbody id="inv-tb"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ═══ RETURNS ═══ -->
+<div class="page" id="pg-returns">
+  <div class="tool-row">
+    <div class="tool-l">
+      <select class="fsel" id="rt-m" onchange="renderRT()"><option value="all">ทุกเดือน</option><option value="1">ม.ค.</option><option value="2">ก.พ.</option><option value="3">มี.ค.</option><option value="4">เม.ย.</option></select>
+    </div>
+    <div class="tool-r">
+      <button class="btn btn-grn" onclick="openCrud('returns',null)">➕ เพิ่มรายการ</button>
+      <button class="btn btn-out" onclick="doExport('returns')">📥 Export</button>
+    </div>
+  </div>
+  <div class="kpi-row" id="rt-kpi"></div>
+  <div class="tc">
+    <div class="th2"><div class="tt">📋 รายการ Return</div><div style="display:flex;align-items:center;gap:7px"><span id="rt-cnt" style="font-size:11px;color:var(--t3)"></span><div class="pg" id="rt-pg"></div></div></div>
+    <div class="tscr"><table class="dt"><thead><tr><th>ID</th><th>วันที่</th><th>Platform</th><th>Zone</th><th>สินค้า</th><th>จำนวน</th><th>สาเหตุ</th><th>ต้นทุน</th><th>สถานะ</th><th>จัดการ</th></tr></thead><tbody id="rt-tb"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ═══ MASTER PRODUCT ═══ -->
+<div class="page" id="pg-m-product">
+  <div class="tool-row">
+    <div class="tool-l">
+      <select class="fsel" id="mp-cat" onchange="renderMP()"><option value="all">ทุกหมวดหมู่</option></select>
+      <select class="fsel" id="mp-br" onchange="renderMP()"><option value="all">ทุก Brand</option></select>
+      <input class="finp" id="mp-q" placeholder="🔍 ค้นหา SKU, ชื่อสินค้า..." oninput="renderMP()">
+    </div>
+    <div class="tool-r">
+      <button class="btn btn-grn" onclick="openMasterAdd('product')">➕ เพิ่มสินค้า</button>
+      <button class="btn btn-out" onclick="doExport('products')">📥 Export</button>
+    </div>
+  </div>
+  <div class="tc">
+    <div class="th2"><div class="tt">🗂️ Master Product</div><div style="display:flex;align-items:center;gap:7px"><span id="mp-cnt" style="font-size:11px;color:var(--t3)"></span><div class="pg" id="mp-pg"></div></div></div>
+    <div class="tscr"><table class="dt"><thead><tr><th>SKU</th><th>ชื่อสินค้า</th><th>หมวดหมู่</th><th>หมวดหมู่ย่อย</th><th>Tag</th><th>Brand</th><th>ราคา</th><th>หน่วย</th><th>จัดการ</th></tr></thead><tbody id="mp-tb"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ═══ MASTER WAREHOUSE ═══ -->
+<div class="page" id="pg-m-warehouse">
+  <div class="tool-row">
+    <div class="tool-l">
+      <select class="fsel" id="mw-st" onchange="renderMW()"><option value="all">ทั้งหมด</option><option value="active">✅ Active</option><option value="closed">❌ Closed</option></select>
+      <input class="finp" id="mw-q" placeholder="🔍 ค้นหาคลัง/สาขา..." oninput="renderMW()">
+    </div>
+    <div class="tool-r">
+      <button class="btn btn-grn" onclick="openMasterAdd('warehouse')">➕ เพิ่มคลัง</button>
+      <button class="btn btn-out" onclick="doExport('warehouses')">📥 Export</button>
+    </div>
+  </div>
+  <div class="tc">
+    <div class="th2"><div class="tt">🏭 Master Warehouse / สาขา</div><span id="mw-cnt" style="font-size:11px;color:var(--t3)"></span></div>
+    <div class="tscr"><table class="dt"><thead><tr><th>รหัส</th><th>ชื่อคลัง/สาขา</th><th>สถานะ</th><th>จัดการ</th></tr></thead><tbody id="mw-tb"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ═══ MASTER CARRIER ═══ -->
+<div class="page" id="pg-m-carrier">
+  <div class="tool-row">
+    <div class="tool-l"><input class="finp" id="mc-q" placeholder="🔍 ค้นหา Carrier..." oninput="renderMC()"></div>
+    <div class="tool-r"><button class="btn btn-grn" onclick="openMasterAdd('carrier')">➕ เพิ่ม Carrier</button></div>
+  </div>
+  <div class="tc">
+    <div class="th2"><div class="tt">🚛 Master Carrier</div><span id="mc-cnt" style="font-size:11px;color:var(--t3)"></span></div>
+    <div class="tscr"><table class="dt"><thead><tr><th>ID</th><th>ชื่อ</th><th>เบอร์โทร</th><th>สถานะ</th><th>จัดการ</th></tr></thead><tbody id="mc-tb"></tbody></table></div>
+  </div>
+</div>
+
+
+<!-- ═══ INVENTORY BALANCE ═══ -->
+<div class="page" id="pg-balance">
+  <div class="tool-row">
+    <div class="tool-l">
+      <select class="fsel" id="bal-brand" onchange="renderBAL()">
+        <option value="all">Overall (ทุก Brand)</option>
+        <option value="Nineties">Nineties</option>
+        <option value="SOON">SOON</option>
+        <option value="Multibrand">Multibrand</option>
+        <option value="Material">Material</option>
+      </select>
+      <select class="fsel" id="bal-type" onchange="renderBAL()">
+        <option value="wh">Stock WH</option>
+        <option value="shop">Stock Shop</option>
+        <option value="all">WH + Shop</option>
+      </select>
+    </div>
+    <div class="tool-r">
+      <button class="btn btn-grn btn-sm" onclick="setBrand('all')">📊 Overall</button>
+      <button class="btn btn-pri btn-sm" onclick="setBrand('Nineties')">🟦 Nineties</button>
+      <button class="btn btn-yel btn-sm" onclick="setBrand('SOON')">🟨 SOON</button>
+      <button class="btn btn-out btn-sm" onclick="setBrand('Multibrand')">🟩 Multi</button>
+      <button class="btn btn-out" onclick="doExport('inbound')">📥 Export</button>
+    </div>
+  </div>
+  <div class="kpi-row" id="bal-kpi"></div>
+  <div class="cc" style="margin-bottom:14px">
+    <div class="ch">
+      <div class="ct" id="bal-title">📊 Monthly Inventory Balance — Overall</div>
+      <div class="cs" id="bal-subtitle">Inbound / Outbound / Return / Stock WH / Stock Shop รายเดือน</div>
+    </div>
+    <canvas id="balChart" height="110"></canvas>
+  </div>
+  <div class="cg2">
+    <div class="cc"><div class="ch"><div class="ct">📥 Inbound แยก Brand</div></div><canvas id="balIbC" height="160"></canvas></div>
+    <div class="cc"><div class="ch"><div class="ct">📤 Outbound แยก Brand</div></div><canvas id="balObC" height="160"></canvas></div>
+  </div>
+  <div class="tc">
+    <div class="th2"><div class="tt">📋 Monthly Summary</div></div>
+    <div class="tscr"><table class="dt">
+      <thead><tr><th>เดือน</th><th>Brand</th><th>Inbound</th><th>Outbound</th><th>Return</th><th>Stock WH</th><th>Stock Shop</th><th>Balance</th></tr></thead>
+      <tbody id="bal-tb"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ═══ ALERTS ═══ -->
+<div class="page" id="pg-alerts">
+  <div class="kpi-row" id="al-kpi"></div>
+  <div id="al-list"></div>
+</div>
+
+<!-- ═══ LOGS ═══ -->
+<div class="page" id="pg-logs">
+  <div class="tc">
+    <div class="th2">
+      <div class="tt">📋 Activity Log</div>
+      <div style="display:flex;gap:7px">
+        <select class="fsel" id="log-u" onchange="renderLogs()"><option value="all">ทุก User</option></select>
+        <select class="fsel" id="log-t" onchange="renderLogs()"><option value="all">ทุกประเภท</option><option value="login">Login</option><option value="view">View</option><option value="add">Add</option><option value="edit">Edit</option><option value="delete">Delete</option><option value="export">Export</option><option value="import">Import</option></select>
+        <button class="btn btn-out btn-sm" onclick="doExport('logs')">📥 Export</button>
+      </div>
+    </div>
+    <div style="padding:4px 15px" id="logList"></div>
+  </div>
+</div>
+
+<!-- ═══ ADMIN ═══ -->
+<div class="page" id="pg-admin">
+  <div class="adm2" id="admContent"></div>
+</div>
+
+    </div><!-- /pc -->
+  </div><!-- /main -->
+ </div><!-- /layout -->
+</div><!-- /app -->
+
+<!-- MODAL CRUD -->
+<div class="mbg" id="mCrud">
+  <div class="mbox">
+    <div class="mtt"><span id="mCrudTit">เพิ่มรายการ</span><button class="btn btn-xs btn-out" onclick="closeM('mCrud')">✕</button></div>
+    <div id="mCrudBody"></div>
+    <div class="mfoot">
+      <button class="btn btn-out" onclick="closeM('mCrud')">ยกเลิก</button>
+      <button class="btn btn-pri" onclick="saveCrud()">✅ บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MASTER ADD -->
+<div class="mbg" id="mMaster">
+  <div class="mbox">
+    <div class="mtt"><span id="mMasterTit">เพิ่ม</span><button class="btn btn-xs btn-out" onclick="closeM('mMaster')">✕</button></div>
+    <div id="mMasterBody"></div>
+    <div class="mfoot">
+      <button class="btn btn-out" onclick="closeM('mMaster')">ยกเลิก</button>
+      <button class="btn btn-pri" onclick="saveMaster()">✅ บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL USER -->
+<div class="mbg" id="mUser">
+  <div class="mbox" style="max-width:420px">
+    <div class="mtt"><span>➕ เพิ่ม User</span><button class="btn btn-xs btn-out" onclick="closeM('mUser')">✕</button></div>
+    <div class="mgrid full">
+      <div class="mfg"><label>ชื่อ</label><input class="mi" id="nu-n" placeholder="ชื่อ-นามสกุล"></div>
+      <div class="mfg"><label>Username</label><input class="mi" id="nu-u" placeholder="username"></div>
+      <div class="mfg"><label>Password</label><input class="mi" type="password" id="nu-p"></div>
+      <div class="mfg"><label>Role</label><select class="mi" id="nu-r"><option value="viewer">Viewer</option><option value="ops">Operator</option><option value="manager">Manager</option><option value="admin">Admin</option></select></div>
+    </div>
+    <div class="mfoot"><button class="btn btn-out" onclick="closeM('mUser')">ยกเลิก</button><button class="btn btn-pri" onclick="addUser()">✅ เพิ่ม</button></div>
+  </div>
+</div>
+
 <script src="data.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
 <script>
-// ═══ DATA ═══
-// (loaded from data.js)
-
-// Static arrays สำหรับ Autocomplete
-
-
+// Register datalabels
+if(typeof ChartDataLabels !== 'undefined') {
+  Chart.register(ChartDataLabels);
+  Chart.defaults.set('plugins.datalabels', {
+    display: ctx => ctx.chart.config.type==='bar' && ctx.dataset.data[ctx.dataIndex] > 0,
+    anchor:'end', align:'end', offset:2, color:'#8b949e',
+    font:{size:9,weight:'600',family:'JetBrains Mono, monospace'},
+    formatter: v => v>=1000?(v/1000).toFixed(1)+'K':v,
+    clamp:true, clip:false,
+  });
+}
+</script>
+<script>
 // ═══ DB ═══
 const DB = {
   transport:  [...(INIT.transport||[])].sort((a,b)=>b.date?.localeCompare(a.date)||0),
@@ -447,9 +790,11 @@ function acInit(inputId, dropId, getOpts, onSelect) {
 }
 
 // ═══ LOGIN ═══
-document.getElementById('lu').addEventListener('keydown', e=>e.key==='Enter'&&document.getElementById('lpass').focus());
-document.getElementById('lpass').addEventListener('keydown', e=>e.key==='Enter'&&doLogin());
-document.getElementById('lbtn').addEventListener('click', doLogin);
+document.addEventListener('DOMContentLoaded', ()=>{
+  document.getElementById('lu')?.addEventListener('keydown', e=>e.key==='Enter'&&document.getElementById('lpass').focus());
+  document.getElementById('lpass')?.addEventListener('keydown', e=>e.key==='Enter'&&doLogin());
+  document.getElementById('lbtn')?.addEventListener('click', doLogin);
+});
 
 function doLogin() {
   const u=document.getElementById('lu').value.trim();
@@ -1304,6 +1649,32 @@ function doExport(table) {
   a.download=`wms_${table}_${new Date().toISOString().slice(0,10)}.csv`;
   a.click(); toast('📥 Export สำเร็จ');
 }
+
+// ═══ DATE HELPERS ═══
+function parseDate(raw) {
+  if(!raw) return null;
+  raw = String(raw).replace(/\r/,'').trim();
+  let dt;
+  if(/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(raw)) {
+    const [d,m,y] = raw.split('/');
+    dt = new Date(+y, +m-1, +d);
+  } else {
+    dt = new Date(raw);
+  }
+  return isNaN(dt) ? null : dt;
+}
+function getWeek(dt) {
+  const start = new Date(dt.getFullYear(), 0, 1);
+  const wk = Math.ceil(((dt - start) / 86400000 + start.getDay() + 1) / 7);
+  return 'WK' + String(wk).padStart(2,'0') + '-' + String(dt.getFullYear()).slice(2);
+}
+function getMonthStr(dt) {
+  return 'M' + (dt.getMonth()+1) + '-' + String(dt.getFullYear()).slice(2);
+}
+function getISODate(dt) {
+  return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
+}
+
 function doImport(table, input) {
   const file=input.files[0]; if(!file) return;
   const reader=new FileReader();
@@ -1347,6 +1718,5 @@ function toggleTheme() {
   const cur=document.querySelector('.nb.on')?.id?.replace('nb-','');
   if(cur) setTimeout(()=>RENDERS[cur]?.(),50);
 }
+
 </script>
-</body>
-</html>
